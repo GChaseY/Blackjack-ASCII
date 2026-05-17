@@ -137,13 +137,13 @@ void playRound(double& m, double& w, bool push){
 
     if (again == "y" || again == "Y"){
         w = getWager(m);
-        push = enablePushing();
         if (w == -1){ // Ends program if not enough money
             exit(0);
         }
         else {
+            push = enablePushing();
             m -= w;
-
+            
             std::cout << "You wagered $" << w << ".  Best of luck to you.\n" << std::endl;
             playRound(m, w, push);
         }
