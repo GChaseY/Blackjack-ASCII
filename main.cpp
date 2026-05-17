@@ -2,6 +2,8 @@
 #include <vector>
 #include <ctime>
 #include <algorithm>
+#include <limits>
+#include <cstdlib>
 
 #include "Card.h"
 
@@ -9,7 +11,7 @@ void startGame();
 
 double getWager(double);
 
-void playRound(double&, double&);
+void playRound(double&, double&, bool);
 
 void rules();
 
@@ -19,9 +21,11 @@ int getHandValue(std::vector<Card>&);
 
 void printHand(std::vector<Card>&);
 
-bool yourTurn(std::vector<Card>&, std::vector<int>&, std::vector<Card>&);
+bool yourTurn(std::vector<Card>&, std::vector<int>&, std::vector<Card>&, double&, double&, bool);
 
-bool dealerTurn(std::vector<Card>&, std::vector<int>&, int);
+bool dealerTurn(std::vector<Card>&, std::vector<int>&, int, double&, double&, bool);
+
+bool enablePushing();
 
 
 int main(){
@@ -32,6 +36,8 @@ int main(){
     double playerMoney = 100.00;
     double wager = getWager(playerMoney);
 
+    bool push {enablePushing()};
+    
     if (wager == -1){ // Ends program if not enough money
         return 0;
     }
@@ -41,7 +47,7 @@ int main(){
         std::cout << "You wagered $" << wager << ".  Best of luck to you.\n" << std::endl;
         rules(); // Displays the rules
 
-        playRound(playerMoney, wager);
+        playRound(playerMoney, wager, push);
 
         return 0;
     }
@@ -84,7 +90,7 @@ double getWager(double m){ // Gets wager
     }
 }
 
-void playRound(double& m, double& w){
+void playRound(double& m, double& w, bool push){
     std::vector<Card> yourHand;
     std::vector<Card> dealerHand;
 
@@ -114,7 +120,7 @@ void playRound(double& m, double& w){
         blackjack = true;
     }
     else{
-        result = yourTurn(yourHand, usedCards, dealerHand);
+        result = yourTurn(yourHand, usedCards, dealerHand, m, w, push);
     }
 
     if (result){
@@ -136,6 +142,7 @@ void playRound(double& m, double& w){
 
     if (again == 'y' || again == 'Y'){
         w = getWager(m);
+        push = enablePushing();
         if (w == -1){ // Ends program if not enough money
             exit(0);
         }
@@ -143,7 +150,7 @@ void playRound(double& m, double& w){
             m -= w;
 
             std::cout << "You wagered $" << w << ".  Best of luck to you.\n" << std::endl;
-            playRound(m, w);
+            playRound(m, w, push);
         }
     }
     else if (again == 'n' || again == 'N'){
@@ -229,7 +236,7 @@ void printHand(std::vector<Card>& hand){
     std::cout << "Total value: " << getHandValue(hand) << std::endl;
 }
 
-bool yourTurn(std::vector<Card>& hand, std::vector<int>& used, std::vector<Card>& dealer){
+bool yourTurn(std::vector<Card>& hand, std::vector<int>& used, std::vector<Card>& dealer, double& m, double& w, bool push){
     int input;
 
     std::cout << "Your turn!" << std::endl;
@@ -268,7 +275,7 @@ bool yourTurn(std::vector<Card>& hand, std::vector<int>& used, std::vector<Card>
 
         else if (input == 2){
             int val = getHandValue(hand);
-            bool result = dealerTurn(dealer, used, val);
+            bool result = dealerTurn(dealer, used, val, m, w, push);
 
             return result;
         }
@@ -281,7 +288,7 @@ bool yourTurn(std::vector<Card>& hand, std::vector<int>& used, std::vector<Card>
     }
 }
 
-bool dealerTurn(std::vector<Card>& hand, std::vector<int>& used, int playerVal){
+bool dealerTurn(std::vector<Card>& hand, std::vector<int>& used, int playerVal, double& money, double& wager, bool push){
     std::cout << "\nDealer's turn!" << std::endl;
     while (getHandValue(hand) <= 17){
         drawCard(hand, used);
@@ -298,6 +305,29 @@ bool dealerTurn(std::vector<Card>& hand, std::vector<int>& used, int playerVal){
         std::cout << "You win! (Your hand was greater than the dealer's)" << std::endl;
         return true;
     }
+    else if (playerVal == getHandValue(hand) && push){
+        std::cout << "It's a tie!  Wager refunded." <<std::endl;
+        money += wager;
+        return false;
+
+    }
     std::cout << "You lose! (Dealer had a greater hand or tied)" << std::endl;
     return false;
+}
+
+bool enablePushing(){
+    char enablePush;
+
+    std::cout << "Enable pushes? If you tie, your wager is refunded. (y/N) ";
+
+    std::cin >> enablePush;
+
+    while (enablePush != 'y' && enablePush != 'Y' && enablePush != 'n' && enablePush != 'N'){
+        std::cout << "Invalid argument!" << std::endl;
+        std::cout << "Enable pushes? (y/N) ";
+        std::cin >> enablePush;
+    }
+
+    if (enablePush == 'y' || enablePush == 'Y') {return true;}
+    else {return false;}
 }
