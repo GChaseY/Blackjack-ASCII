@@ -131,16 +131,11 @@ void playRound(double& m, double& w, bool push){
      std::cout << "Now you have $" << m << "." << std::endl;
      std::cout << "Play again? (y/N) ";
 
-    char again;
-    std::cin >> again;
+    std::string again;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::getline(std::cin, again);
 
-    while (again != 'y' && again != 'Y' && again != 'n' && again != 'N'){
-        std::cout << "Invalid argument!" << std::endl;
-        std::cout << "Play again? (y/N) ";
-        std::cin >> again;
-    }
-
-    if (again == 'y' || again == 'Y'){
+    if (again == "y" || again == "Y"){
         w = getWager(m);
         push = enablePushing();
         if (w == -1){ // Ends program if not enough money
@@ -153,7 +148,7 @@ void playRound(double& m, double& w, bool push){
             playRound(m, w, push);
         }
     }
-    else if (again == 'n' || again == 'N'){
+    else{
         exit(0);
     }
 }
@@ -316,18 +311,13 @@ bool dealerTurn(std::vector<Card>& hand, std::vector<int>& used, int playerVal, 
 }
 
 bool enablePushing(){
-    char enablePush;
+    std::string enablePush;
 
     std::cout << "Enable pushes? If you tie, your wager is refunded. (y/N) ";
 
-    std::cin >> enablePush;
+    std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+    std::getline(std::cin, enablePush);
 
-    while (enablePush != 'y' && enablePush != 'Y' && enablePush != 'n' && enablePush != 'N'){
-        std::cout << "Invalid argument!" << std::endl;
-        std::cout << "Enable pushes? (y/N) ";
-        std::cin >> enablePush;
-    }
-
-    if (enablePush == 'y' || enablePush == 'Y') {return true;}
+    if (enablePush == "y" || enablePush == "Y") {return true;}
     else {return false;}
 }
